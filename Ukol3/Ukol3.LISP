@@ -101,8 +101,7 @@ Zadne
 
 NOVE VLASTNOSTI
 
-semaphores:      Seznam vsech semaforu, jez dana krizovatka obsahuje. Pouze ke cteni. Obsluhu
-                 teto vlastnosti obstarava upravena zdedena zprava set-items.
+semaphores:      Seznam vsech semaforu, jez dana krizovatka obsahuje. Pouze ke cteni.
 
 crossroads-phase:
                  Aktualni faze krizovatky. Cisluje se od nuly. Pouze ke cteni. Defaultni hodnota 0.
@@ -119,9 +118,7 @@ program:         Urcuje faze semaforu. Jedna se o seznam seznamu, i-ty podseznam
 
 UPRAVENE ZDEDENE ZPRAVY
 
-set-items items: K predchozi funkcionalite teto zpravy se pridava kontrola zadavaneho seznamu
-                 na pritomnost semaforu. Pripadne semafory pak tato zprava nastavi jako seznam 
-                 do vlastnosti semaphores dane krizovatky.
+Zadne
 
 NOVE ZPRAVY
 
@@ -273,28 +270,6 @@ next-phase:      Posune fazi krizovatky o jeden krok (na dalsi podseznam vlastno
    (program :initform '())))
 
 ;;;
-;;; Upravena zdedena zprava
-;;;
-
-(defmethod set-items ((cr crossroads) item-list)
-  (call-next-method)
-  (let ((semaphore-list '()))
-    (setf (slot-value cr 'semaphores) (append (reverse (check-for-semaphores item-list)) semaphore-list))
-  cr))
-
-;;;
-;;; Pomocna funkce pro metodu set-items tridy crossroads
-
-(defun check-for-semaphores (item-list)
-  (let ((output '()))
-	(dolist (item (copy-list item-list))
-		(when (typep item 'semaphore)
-			(setf output (cons item output)))
-		(when (typep item 'picture)
-			(setf output (append (check-for-semaphores (items item)) output))))
-        output))
-
-;;;
 ;;; Vlastnosti
 ;;;
 
@@ -308,8 +283,21 @@ next-phase:      Posune fazi krizovatky o jeden krok (na dalsi podseznam vlastno
   (slot-value cr 'phase-count))
 
 (defmethod semaphores ((cr crossroads))
-  (copy-list (slot-value cr 'semaphores)))
+    (setf (slot-value cr 'semaphores) 
+          (reverse (check-for-semaphores (items cr))))
+    (slot-value cr 'semaphores))
 
+;;;
+;;; Pomocna funkce pro vlastnost semaphores tridy crossroads
+
+(defun check-for-semaphores (item-list)
+  (let ((output '()))
+	(dolist (item (copy-list item-list))
+		(when (typep item 'semaphore)
+			(setf output (cons item output)))
+		(when (typep item 'picture)
+			(setf output (append (check-for-semaphores (items item)) output))))
+        output))
 ;;;
 ;;; Zpravy
 ;;;
@@ -327,7 +315,7 @@ next-phase:      Posune fazi krizovatky o jeden krok (na dalsi podseznam vlastno
   cr)
 
 (defmethod next-phase ((cr crossroads))
-  (set-crossroads-phase cr (rem (+ 1 (crossroads-phase cr)) (- 1 (phase-count cr))))
+  (set-crossroads-phase cr (rem (+ 1 (crossroads-phase cr)) (- 0 (phase-count cr))))
   cr)
 
 
